@@ -4,6 +4,27 @@ import XCTest
 import Nimble
 
 
+struct FSFlightplan: Codable {
+    @Firestore.StringValue
+    var id: String
+    
+    @Firestore.StringValue
+    var parentId: String
+    
+    // @Firestore.StringValue
+    // var origin: String
+    
+    //@Firestore.StringValue
+    //var destination: String
+    
+    @Firestore.TimestampValue
+    var lastModified: Date
+    
+    @Firestore.TimestampValue
+    var metadataModified: Date
+}
+
+
 
 final class VaporFirestoreTests: XCTestCase {
     var app: Application!
@@ -59,7 +80,7 @@ final class VaporFirestoreTests: XCTestCase {
     func testGeoRead() throws {
         do {
             var objectId = "<object-id>"
-            objectId = "uIrxY3fapSXfiIELVKSd" // uncomment this string a and set it to some real id from testDatabbase
+            objectId = "7B5qnHhy0vzpq6yQNFlR" // uncomment this string a and set it to some real id from testDatabbase
             let client = app.firestoreService.firestore
 
             let result: Firestore.Document<GeoFieldTest> = try client.getDocument(path: "test/\(objectId)").wait()
@@ -128,6 +149,20 @@ final class VaporFirestoreTests: XCTestCase {
         }
     }
 
+    func testListDocs2() async throws {
+        do {
+            let client = app.firestoreService.firestore
+            let result: [Firestore.Document<FSFlightplan>] = try await client.listDocuments(path: "users/2/flightplans")
+            
+            expect(result).toNot(beNil())
+            XCTAssertGreaterThan(result.count, 3900)
+            expect(result[0].fields?.id).toNot(beNil())
+            expect(result[0].fields?.parentId).toNot(beNil())
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+    }
+    
     func testGetDoc() throws {
         do {
             var objectId = "<object-id>"
@@ -169,7 +204,7 @@ final class VaporFirestoreTests: XCTestCase {
     func testAllTypesRead() throws {
         do {
             var objectId = "<object-id>"
-            objectId = "0z3IKmbPuzd212wlhH6u" // uncomment this string a and set it to some real id from testDatabbase
+            objectId = "7ANaWtFHJ2p4VKspHOP9" // uncomment this string a and set it to some real id from testDatabbase
             let client = app.firestoreService.firestore
 
             let result: Firestore.Document<AllTypesModelTest> = try client.getDocument(path: "test/\(objectId)").wait()

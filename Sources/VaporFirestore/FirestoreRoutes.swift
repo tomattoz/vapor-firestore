@@ -27,7 +27,37 @@ public struct FirestoreResource {
             query: "",
             body: ByteBuffer(),
             headers: [:])
-        return sendReq.map { $0.documents }
+        return sendReq.map { result in
+            result.documents
+        }
+    }
+    public func listDocuments<T: Decodable>(path: String) async throws -> [Firestore.Document<T>] {
+        var results = [Firestore.Document<T>]()
+        
+        let result: Firestore.List.Response<T> = try await client.send(
+            method: .GET,
+            path: path,
+            query: "pageSize=250",
+            body: ByteBuffer(),
+            headers: [:]).get()
+
+        results.append(contentsOf: result.documents)
+
+        if var token = result.nextPageToken {
+            repeat {
+                let pageResults: Firestore.List.Response<T> = try await client.send(
+                    method: .GET,
+                    path: path,
+                    query: "pageSize=250&pageToken=\(token)",
+                    body: ByteBuffer(),
+                    headers: [:]).get()
+                token = pageResults.nextPageToken ?? ""
+                results.append(contentsOf: pageResults.documents)
+                //print("\(token):\(results.count)")
+            } while (token != "")
+        }
+        
+        return results
     }
 
     public func createDocument<T: Codable>(path: String, name: String? = nil, fields: T) -> EventLoopFuture<Firestore.Document<T>> {
