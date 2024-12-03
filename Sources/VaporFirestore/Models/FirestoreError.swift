@@ -1,17 +1,17 @@
 import Foundation
 
 
-struct FirestoreErrorResponse: Error, Codable {
-    struct FirestoreErrorResponseBody: Codable {
-        let code: Int
-        let message: String
-        let status: String
+public struct FirestoreErrorResponse: Error, Codable {
+    public struct FirestoreErrorResponseBody: Codable {
+        public let code: Int
+        public let message: String
+        public let status: String
     }
     
-    let error : FirestoreErrorResponseBody
+    public let error : FirestoreErrorResponseBody
 }
 
-enum FirestoreError: Error {
+public enum FirestoreError: Error {
     case requestFailed
     case signing
     case parseFailed(data: String)
