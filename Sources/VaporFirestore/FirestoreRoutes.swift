@@ -95,4 +95,21 @@ public struct FirestoreResource {
         }
     }
 
+    public func updateDocument<T: Codable>(path: String, raw: String, updateMask: [String]?) -> EventLoopFuture<T> {
+        var queryParams = ""
+        if let updateMask = updateMask {
+            queryParams = updateMask.map({ "updateMask.fieldPaths=\($0)" }).joined(separator: "&")
+        }
+
+        return app.client.eventLoop.tryFuture { () -> ByteBuffer in
+            return ("{fields: \(raw)}".data(using: .utf8) ?? .init()).convertToHTTPBody()
+        }.flatMap { requestBody -> EventLoopFuture<T> in
+            return client.send(
+                method: .PATCH,
+                path: path,
+                query: queryParams,
+                body: requestBody,
+                headers: [:])
+        }
+    }
 }
